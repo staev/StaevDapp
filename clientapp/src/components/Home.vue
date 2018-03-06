@@ -1,36 +1,92 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <button v-on:click="click">mada facka</button>
+    <button v-on:click="allAccounts">allAccounts</button>
+    <button v-on:click="readFromContract">read</button>
+    <button v-on:click="writeToContract">write</button>
+    <input v-model="address"  type="text"/>
+    <button v-on:click="getBalance">getBalance</button>
   </div>
 </template>
 
 <script>
 
+  debugger
       import Web3 from 'web3'
-      let provider = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-
+      //import ContractResource from '../services/ContractResource.js';
+      //let contractResources = new ContractResource()
+      let contractAbi = [
+    {
+      "inputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "get",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "increment",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ];
+      let contractAddress="0x345ca3e014aaf5dca488057592ee47305d9b3e10";
+      let provider = new Web3(new Web3.providers.HttpProvider("http://localhost:9545"));
+     // provider.eth.getAccounts((error, accounts) => console.log(accounts))
+      let contract = provider.eth.contract(contractAbi);
+      let	contractInstance = contract.at(contractAddress);
 export default {
   name: 'HelloWorld',
   data () {
-    return {
-      msg: 'Welcome to Your Vue.js App'
+    return {  
+      msg: 'Welcome to HaveFun Funds Dapp',
+      address: "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
     }
   },
     methods: {
     init () { 
         
     },
-    click(){
-      debugger
-
+    allAccounts(){
         provider.eth.getAccounts((error, accounts) => console.log(accounts))
-        provider.eth.getBalance("0x02ab6efddb2682d888f4cfa6e3f94a5d4085e444", 
-                (error, balance) => console.log(balance.toNumber()))
-        web3.eth.getAccounts((error, accounts) => console.log(accounts))
-       
-        //let acc = web3.eth.accounts[0]; //get the first account
-       // let otherAcc = web3.eth.accounts[1]; 
+    },
+    readFromContract(){
+      contractInstance.get.call({"from": this.address }, function(err, res) {
+        if(!err){
+          console.log(res.toNumber());
+        } else {
+          console.log("Something went horribly wrong");
+        }
+      });
+    },
+    writeToContract(){
+      contractInstance.increment({"from": this.address}, function(err, res){
+        if(!err){
+          console.log("Success! Transaction hash: " + res.valueOf());
+        } else {
+          console.log("Something went wrong. Are you sure that you are the current owner?");
+        }
+      });
+    },
+    getBalance(){
+        provider.eth.getBalance(this.address, 
+            (error, balance) => console.log(balance.toNumber()))
     }
   },
   created () {
