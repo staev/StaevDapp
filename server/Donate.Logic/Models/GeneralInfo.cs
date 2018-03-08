@@ -10,6 +10,6 @@ namespace Donate.Logic
         public BigInteger TotalFunds { get; set; }
 
         [Parameter("uint256", "allCampaings", 2)]
-        public BigInteger AllCampaings { get; set; }
+        public long AllCampaings { get; set; }
     }
 }

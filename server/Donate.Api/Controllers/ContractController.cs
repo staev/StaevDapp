@@ -1,4 +1,5 @@
 ﻿using Donate.Logic;
+using Donate.Logic.ApiModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Donate.Api.Controllers
@@ -13,10 +14,11 @@ namespace Donate.Api.Controllers
             DonateContract = donateContract;
         }
 
-        [HttpGet("all-campaings")]
-        public void AllCampaigns()
+        [HttpGet("info")]
+        public DonationstInfo Info()
         {
-           var data =  DonateContract.GetCampaigns();
+            DonationstInfo info = DonateContract.DonationsInfo();
+            return info;
         }
     }
 }

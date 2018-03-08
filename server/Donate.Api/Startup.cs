@@ -26,14 +26,14 @@ namespace Donate.Api
         {
             services.AddMvc();
 
-            services.AddSingleton<IDonateContract>(s =>
-           {
-               string privateKey = Configuration.GetValue<string>("privateKey");
-               string networkUrl = Configuration.GetValue<string>("networkUrl");
+            ContractConfig config = new ContractConfig();
+            Configuration.GetSection("ContractConfig").Bind(config);
 
-               IDonateContract contract = new DonateContract(privateKey, networkUrl);
+            services.AddSingleton<IDonateContract>(s =>
+            {
+               IDonateContract contract = new DonateContract(config);
                return contract;
-           });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

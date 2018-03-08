@@ -132,11 +132,12 @@ contract DonateContract {
         return (totalFunds = totalFundsDonated, allCampaings = totalCampaings);
     }
     
-    function campaignDetails(uint index) view public returns(uint totalNeeded, uint collectedUntilNow, uint giversCount, bool isActive){
+    function campaignDetails(uint index) view public returns(address campaingOwner, uint totalNeeded, uint collectedUntilNow, uint giversCount, bool isActive){
         
         address _addr = campaignIndexes[index];
         
         return (
+                campaingOwner = _addr,
                 totalNeeded = campaigns[_addr].totalFundsNeeded,
                 collectedUntilNow = campaigns[_addr].collectedFunds,
                 giversCount = donationDetails[_addr].length,

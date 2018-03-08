@@ -4,7 +4,6 @@ using Nethereum.Signer;
 using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
 
@@ -12,38 +11,47 @@ namespace Donate.Logic
 {
     public interface IDonateContract
     {
-        List<CampaignInfo> GetCampaigns();
+        ApiModel.DonationstInfo DonationsInfo();
     }
 
     public class DonateContract : IDonateContract
     {
-        private HexBigInteger _defaultGas = new HexBigInteger(3000000);
-        private HexBigInteger _zero = new HexBigInteger(0);
+        private HexBigInteger defaultGas = new HexBigInteger(3000000);
+        private HexBigInteger zero = new HexBigInteger(0);
 
-        private string PrivateKey { get; set; }
-        private string NetworkUrl { get; set; }
-
-        private string ContractAddress { get; set; }
         private Web3 Web3 { get; set; }
         private Account Account { get; set; }
+        private ContractConfig Config { get; set; }
+        private string ContractAddress { get; set; }
+        private string Owner { get; set; }
 
-        private Contract GetContract()
+        private Contract contract;
+        private Contract Contract
         {
-            var info = GetContractInfo();
-            return Web3.Eth.GetContract(info.GetAbi(), ContractAddress);
+            get
+            {
+                if (contract == null)
+                {
+                    var info = GetContractInfo();
+                    contract = Web3.Eth.GetContract(info.GetAbi(), ContractAddress);
+                }
+                return contract;
+            }
         }
 
-        public DonateContract(string privateKey, string networkUrl)
+        public DonateContract(ContractConfig config)
         {
-            PrivateKey = privateKey;
-            NetworkUrl = networkUrl;
+            Config = config;
 
-            Account = new Account(PrivateKey);
-            Web3 = new Web3(Account, NetworkUrl);
+            Account = new Account(Config.PrivateKey);
+            Owner = Account.Address;
+
+            Web3 = new Web3(Account, config.NetworkUrl);
             Web3.TransactionManager.DefaultGas = BigInteger.Parse("3000000");
             Web3.TransactionManager.DefaultGasPrice = Transaction.DEFAULT_GAS_PRICE;
 
             DeployContract();
+            InitCampaigns();
         }
 
         private void DeployContract()
@@ -52,7 +60,7 @@ namespace Donate.Logic
             {
                 var contract = GetContractInfo();
                 var senderAddress = Account.Address;
-                var transactionHash = Web3.Eth.DeployContract.SendRequestAsync(contract.GetAbi(), contract.ByteCode, senderAddress, _defaultGas, new object[] { }).GetAwaiter().GetResult();
+                var transactionHash = Web3.Eth.DeployContract.SendRequestAsync(contract.GetAbi(), contract.ByteCode, senderAddress, defaultGas, new object[] { }).GetAwaiter().GetResult();
 
                 var receipt = Web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash).GetAwaiter().GetResult();
                 while (receipt == null)
@@ -65,26 +73,54 @@ namespace Donate.Logic
             }
         }
 
+        private void InitCampaigns()
+        {
+            var startCampaignFunc = Contract.GetFunction("startCampaign");
+
+            if (!string.IsNullOrEmpty(Config.Campaing1Owner))
+                startCampaignFunc.SendTransactionAsync(Owner, defaultGas, zero, Config.Campaing1Owner, 5).GetAwaiter().GetResult();
+
+            if (!string.IsNullOrEmpty(Config.Campaing2Owner))
+                startCampaignFunc.SendTransactionAsync(Owner, defaultGas, zero, Config.Campaing2Owner, 3).GetAwaiter().GetResult();
+        }
+
         private ContractMetaInfo GetContractInfo()
         {
             var json = System.IO.File.ReadAllText(@"..\..\truffle\build\contracts\DonateContract.json");
             return JsonConvert.DeserializeObject<ContractMetaInfo>(json);
         }
 
-        public List<CampaignInfo> GetCampaigns()
+        private decimal WeiiToEther(BigInteger value)
         {
-            List<CampaignInfo> campaigns = new List<CampaignInfo>();
+            decimal ethers = Nethereum.Util.UnitConversion.Convert.FromWei(value);
+            return ethers;
+        }
 
-            var contract = GetContract();
+        public ApiModel.DonationstInfo DonationsInfo()
+        {
+            ApiModel.DonationstInfo info = new ApiModel.DonationstInfo();
 
-            GeneralInfo generalInfo = contract.GetFunction("allCampaignsInfo").CallDeserializingToObjectAsync<GeneralInfo>().GetAwaiter().GetResult();
+            GeneralInfo generalInfo = Contract.GetFunction("allCampaignsInfo").CallDeserializingToObjectAsync<GeneralInfo>().
+                GetAwaiter().GetResult();
 
-            for (int i = 0; i < generalInfo.AllCampaings; i++)
+            info.TotalFunds = WeiiToEther(generalInfo.TotalFunds);
+            info.AllCampaings = generalInfo.AllCampaings;
+
+            for (long i = 0; i < generalInfo.AllCampaings; i++)
             {
-                CampaignInfo campaignInfo = contract.GetFunction("campaignDetails").CallDeserializingToObjectAsync<CampaignInfo>(ContractAddress, _defaultGas, _zero, i).GetAwaiter().GetResult();
+                CampaignInfo cInfo = contract.GetFunction("campaignDetails").CallDeserializingToObjectAsync<CampaignInfo>(ContractAddress, defaultGas, zero, i).GetAwaiter().GetResult();
+
+                ApiModel.CampaignInfo campaignInfo = new ApiModel.CampaignInfo();
+                campaignInfo.Owner = cInfo.CampaignOwner;
+                campaignInfo.Collected = WeiiToEther(cInfo.CollectedUntilNow);
+                campaignInfo.FundsNeeded = WeiiToEther(cInfo.TotalNeeded);
+                campaignInfo.GiversCount = cInfo.GiversCount;
+                campaignInfo.IsActive = cInfo.IsActive;
+
+                info.Campaigns.Add(campaignInfo);
             }
 
-            return campaigns;
+            return info;
         }
     }
 }
