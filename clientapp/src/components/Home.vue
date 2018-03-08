@@ -13,44 +13,28 @@
 
   debugger
       import Web3 from 'web3'
-      //import ContractResource from '../services/ContractResource.js';
+      import ContractResources from '../services/ContractResource';
+
+      let contractResources = new ContractResources()
+     
       //let contractResources = new ContractResource()
-      let contractAbi = [
-    {
-      "inputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "get",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "increment",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    }
-  ];
-      let contractAddress="0x345ca3e014aaf5dca488057592ee47305d9b3e10";
+      let contractAbi = contractResources.getContractAbi();
+      let contractAddress=contractResources.getContractAddress();
       let provider = new Web3(new Web3.providers.HttpProvider("http://localhost:9545"));
-     // provider.eth.getAccounts((error, accounts) => console.log(accounts))
+
       let contract = provider.eth.contract(contractAbi);
       let	contractInstance = contract.at(contractAddress);
+
+      var event = contractInstance.newValue()
+
+      // watch for changes
+      event.watch(function(error, result){
+        if (!error)
+            {
+              console.log(result.args.oldValue.toNumber() + "," + result.args.newValue.toNumber());
+            }
+      });
+
 export default {
   name: 'HelloWorld',
   data () {
@@ -61,6 +45,7 @@ export default {
   },
     methods: {
     init () { 
+    
         
     },
     allAccounts(){

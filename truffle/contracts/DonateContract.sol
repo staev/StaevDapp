@@ -8,7 +8,7 @@ contract DonateContract {
         uint date;
     }
     
-     struct CompaignInfo {
+     struct CampaignInfo {
         address holder; 
         uint creationDate;
         uint collectedFunds;
@@ -18,19 +18,23 @@ contract DonateContract {
     }
     
     address private owner;
-    uint private totalCompaings;
+    uint private totalCampaings;
     uint private totalFundsDonated;
     
-    mapping(address => CompaignInfo) private compaigns;
+    mapping(address => CampaignInfo) private campaigns;
     mapping(address => DonationInfo[]) private donationDetails;
     
-    event CompaingStarted(address owner, uint fundsNeeded, uint date);
-    event FundsDonated(address from, address compaign, uint fundsAmount, uint date);
+    //helper mappings for iterating 
+    mapping(uint => address) campaignIndexes;
+    
+    
+    event CampaingStarted(address owner, uint fundsNeeded, uint date);
+    event FundsDonated(address from, address campaign, uint fundsAmount, uint date);
     event ContractDonated(address from, uint fundsAmount, uint date);
      
     function DonateContract() public {
         owner = msg.sender;
-        totalCompaings = 0;
+        totalCampaings = 0;
         totalFundsDonated = 0;
     }
     
@@ -39,101 +43,119 @@ contract DonateContract {
         _;
     }
     
-    modifier isOverflow(address _compaignAddr) {
-        uint compaignFunds = compaigns[_compaignAddr].collectedFunds;
-        require(compaignFunds + msg.value > compaignFunds);
+    modifier isMoreThanZero() {
+       require(msg.value > 0);
          _;
     }
     
-    modifier isValidCompaign(address _addr) {
-       require(compaigns[_addr].holder == _addr);
-       require(compaigns[_addr].isActive == true);
+    modifier isOverflow(address _campaignAddr) {
+        uint campaignFunds = campaigns[_campaignAddr].collectedFunds;
+        require(campaignFunds + msg.value > campaignFunds);
+         _;
+    }
+    
+    modifier isValidCampaign(address _addr) {
+       require(campaigns[_addr].holder == _addr);
+       require(campaigns[_addr].isActive == true);
        _;
     }
     
-    modifier isNewCompaign(address _addr) {
-        require(compaigns[_addr].holder != _addr);
+    modifier isNewCampaign(address _addr) {
+        require(campaigns[_addr].holder != _addr);
        _;
     }
     
-    function getAllCompaigns() public view returns(uint) {
-        return totalCompaings;
+    function getAllCampaigns() public view returns(uint) {
+        return totalCampaings;
     }
     
     function donate() payable public {
         ContractDonated(msg.sender, msg.value, now);
     }
     
-    function startCompaign(address _addr, uint fundsNeeded) isOwner isNewCompaign(_addr) public {
-       CompaignInfo memory cInfo;
+    function startCampaign(address _addr, uint fundsNeeded) isOwner isNewCampaign(_addr) public {
+       CampaignInfo memory cInfo;
        cInfo.creationDate = now;
        cInfo.holder = _addr;
        cInfo.isActive = true;
        cInfo.totalFundsNeeded = fundsNeeded * 1 ether;
        cInfo.collectedFunds = 0;
    
-       compaigns[_addr] = cInfo;
+       campaigns[_addr] = cInfo;
        
-       totalCompaings +=1;
+       campaignIndexes[totalCampaings] = _addr;
+       totalCampaings +=1;
        
-       CompaingStarted(_addr, fundsNeeded, now);
+       CampaingStarted(_addr, cInfo.totalFundsNeeded , now);
     }
     
     function isDonateMoreThanRemaining(address _addr) private view returns(bool) {
-        bool isMore = compaigns[_addr].collectedFunds + msg.value > compaigns[_addr].totalFundsNeeded;
+        bool isMore = campaigns[_addr].collectedFunds + msg.value > campaigns[_addr].totalFundsNeeded;
         return isMore;
     }
     
-    function donateForCompaign(address compaignAddr) 
-            public isValidCompaign(compaignAddr) isOverflow(compaignAddr) payable {
-    
+    function donateForCampaign(address campaignAddr) 
+            public isValidCampaign(campaignAddr) isMoreThanZero isOverflow(campaignAddr) payable {
+            
+       
         uint sumToTranfer = msg.value;
-        
+         
         // if sum us more take only needed
-        if(isDonateMoreThanRemaining(compaignAddr)) {
-            sumToTranfer =  compaigns[compaignAddr].totalFundsNeeded - compaigns[compaignAddr].collectedFunds;
+        if(isDonateMoreThanRemaining(campaignAddr)) {
+            sumToTranfer =  campaigns[campaignAddr].totalFundsNeeded - campaigns[campaignAddr].collectedFunds;
+            uint moneyBack = msg.value - sumToTranfer;
+            msg.sender.transfer(moneyBack);
         }
         
-        compaigns[compaignAddr].collectedFunds += sumToTranfer;
-        compaignAddr.transfer(sumToTranfer);
+        campaigns[campaignAddr].collectedFunds += sumToTranfer;
+       
         DonationInfo memory info = DonationInfo({
                 giver : msg.sender,
                 amount : sumToTranfer,
                 date : now
             });
             
-        donationDetails[compaignAddr].push(info);
+        donationDetails[campaignAddr].push(info);
         totalFundsDonated += sumToTranfer;
         
-        FundsDonated(msg.sender, compaignAddr, sumToTranfer , info.date);
-        
+        FundsDonated(msg.sender, campaignAddr, sumToTranfer , info.date);
+       
         // money are collected 
-        if(compaigns[compaignAddr].collectedFunds >= compaigns[compaignAddr].totalFundsNeeded) {
-            compaigns[compaignAddr].isActive = false;
-            compaigns[compaignAddr].fundsCollectedAt = info.date;
+        if(campaigns[campaignAddr].collectedFunds >= campaigns[campaignAddr].totalFundsNeeded) {
+            campaigns[campaignAddr].isActive = false;
+            campaigns[campaignAddr].fundsCollectedAt = info.date;
+            campaignAddr.transfer(campaigns[campaignAddr].collectedFunds);
         }
     }
     
-    function allCompaignsInfo() public view returns(uint totalFunds, uint allCompaings) {
-        return (totalFunds = totalFundsDonated, allCompaings = totalCompaings);
+    function allCampaignsInfo() public view returns(uint totalFunds, uint allCampaings) {
+        return (totalFunds = totalFundsDonated, allCampaings = totalCampaings);
     }
     
-    function compaignDetails(address _addr) view public returns(uint totalNeeded, uint collectedUntilNow, uint giversCount){
+    function campaignDetails(uint index) view public returns(uint totalNeeded, uint collectedUntilNow, uint giversCount, bool isActive){
+        
+        address _addr = campaignIndexes[index];
+        
         return (
-                totalNeeded = compaigns[_addr].totalFundsNeeded,
-                collectedUntilNow = compaigns[_addr].collectedFunds,
-                giversCount = donationDetails[_addr].length
+                totalNeeded = campaigns[_addr].totalFundsNeeded,
+                collectedUntilNow = campaigns[_addr].collectedFunds,
+                giversCount = donationDetails[_addr].length,
+                isActive = campaigns[_addr].isActive
             );
     }
     
-    function giverDetails(address compaignAddr, uint index) public view 
+    function giverDetails(address campaignAddr, uint index) public view 
         returns (address giver, uint amount, uint date) {
         
-        DonationInfo memory giverInfo = donationDetails[compaignAddr][index];
+        DonationInfo memory giverInfo = donationDetails[campaignAddr][index];
         return (giver = giverInfo.giver, amount = giverInfo.amount, date = giverInfo.date);
     }
     
-    function getTotalBalance() public isOwner view returns(uint) {
+    function hasOwnerRights() public view returns(bool){
+        return msg.sender == owner;
+    }
+    
+   function getBalance() public isOwner view returns(uint){
         return this.balance;
     }
 }
