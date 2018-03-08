@@ -15,6 +15,7 @@ namespace Donate.Logic
     {
         ApiModel.DonationstInfo DonationsInfo();
         List<ApiModel.GiverInfo> GiversForCampaing(string address, int count);
+        ApiModel.ContractMetadata GetMetadata();
     }
 
     public class DonateContract : IDonateContract
@@ -161,6 +162,15 @@ namespace Donate.Logic
             }
 
             return givers;
+        }
+
+        public ApiModel.ContractMetadata GetMetadata()
+        {
+            ApiModel.ContractMetadata metaData = new ApiModel.ContractMetadata();
+            metaData.Address = ContractAddress;
+            metaData.Abi = JsonConvert.SerializeObject(GetContractInfo().Abi);
+
+            return metaData;
         }
 
     }

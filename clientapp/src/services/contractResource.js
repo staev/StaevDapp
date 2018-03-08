@@ -1,4 +1,4 @@
-export default class {
+export default class {  
   getContractAddress () {
     return '0xfb88de099e13c3ed21f80a7a1e49f8caecf10df6';
   }

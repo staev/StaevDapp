@@ -11,29 +11,21 @@
 
 <script>
 
-  debugger
       import Web3 from 'web3'
       import ContractResources from '../services/ContractResource';
-
+      let	contractInstance;
+      let baseUrl = "http://localhost:60099/api/contract"
       let contractResources = new ContractResources()
-     
-      //let contractResources = new ContractResource()
-      let contractAbi = contractResources.getContractAbi();
-      let contractAddress=contractResources.getContractAddress();
-      let provider = new Web3(new Web3.providers.HttpProvider("http://localhost:9545"));
-
-      let contract = provider.eth.contract(contractAbi);
-      let	contractInstance = contract.at(contractAddress);
-
-      var event = contractInstance.newValue()
+      //let provider = new Web3(new Web3.providers.HttpProvider("http://localhost:9545"));
+     // var event = contractInstance.newValue()
 
       // watch for changes
-      event.watch(function(error, result){
-        if (!error)
-            {
-              console.log(result.args.oldValue.toNumber() + "," + result.args.newValue.toNumber());
-            }
-      });
+     // event.watch(function(error, result){
+     //   if (!error)
+     //       {
+     //         console.log(result.args.oldValue.toNumber() + "," + result.args.newValue.toNumber());
+     //       }
+     //  });
 
 export default {
   name: 'HelloWorld',
@@ -45,23 +37,27 @@ export default {
   },
     methods: {
     init () { 
-    
-        
+     this.$http.get(baseUrl + '/metadata')
+        .then(response => {
+          let contractMetadata = response.body;
+          let contract = web3.eth.contract(JSON.parse(contractMetadata.abi));
+          contractInstance = contract.at(contractMetadata.address);
+        });
     },
     allAccounts(){
         provider.eth.getAccounts((error, accounts) => console.log(accounts))
     },
     readFromContract(){
-      contractInstance.get.call({"from": this.address }, function(err, res) {
+      contractInstance.hasOwnerRights.call(function(err, res) {
         if(!err){
-          console.log(res.toNumber());
+          console.log(res);
         } else {
           console.log("Something went horribly wrong");
         }
       });
     },
     writeToContract(){
-      contractInstance.increment({"from": this.address}, function(err, res){
+      contractInstance.donateForCampaign('0x6330a553fc93768f612722bb8c2ec78ac90b3bbc',{from: web3.eth.accounts[0], gas: 3000000, value: 10000000000000000000}, function(err, res){
         if(!err){
           console.log("Success! Transaction hash: " + res.valueOf());
         } else {
@@ -83,7 +79,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 h1, h2 {
-  font-weight: normal;
+  font-weight: normal; 
 }
 ul {
   list-style-type: none;

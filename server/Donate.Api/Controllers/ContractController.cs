@@ -29,5 +29,12 @@ namespace Donate.Api.Controllers
             List< ApiModels.GiverInfo> givers = DonateContract.GiversForCampaing(address, count);
             return givers;
         }
+
+        [HttpGet("metadata")]
+        public ContractMetadata Metadata()
+        {
+            ContractMetadata metadata = DonateContract.GetMetadata();
+            return metadata;
+        }
     }
 }

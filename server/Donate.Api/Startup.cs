@@ -26,6 +26,16 @@ namespace Donate.Api
         {
             services.AddMvc();
 
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    );
+            });
+
             ContractConfig config = new ContractConfig();
             Configuration.GetSection("ContractConfig").Bind(config);
 
@@ -43,6 +53,8 @@ namespace Donate.Api
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseCors("CorsPolicy");
 
             app.UseMvc();
         }

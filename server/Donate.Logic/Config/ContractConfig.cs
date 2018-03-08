@@ -7,7 +7,5 @@ namespace Donate.Logic
         public string NetworkUrl { get; set; }
         public string Campaing1Owner { get; set; }
         public string Campaing2Owner { get; set; }
-        public string Donator1 { get; set; }
-        public string Donator2 { get; set; }
     }
 }
