@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2024
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Donate.Api", "Donate.Api\Donate.Api.csproj", "{16BC2493-2180-456D-B3A9-C554659AE5D3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Donate.Logic", "Donate.Logic\Donate.Logic.csproj", "{14932B3B-AD4B-4EC2-9B0F-838AF7E978B2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{16BC2493-2180-456D-B3A9-C554659AE5D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16BC2493-2180-456D-B3A9-C554659AE5D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16BC2493-2180-456D-B3A9-C554659AE5D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16BC2493-2180-456D-B3A9-C554659AE5D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14932B3B-AD4B-4EC2-9B0F-838AF7E978B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14932B3B-AD4B-4EC2-9B0F-838AF7E978B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14932B3B-AD4B-4EC2-9B0F-838AF7E978B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14932B3B-AD4B-4EC2-9B0F-838AF7E978B2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6F0134EA-4D43-49F5-9132-89291CE777DC}
+	EndGlobalSection
+EndGlobal

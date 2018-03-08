@@ -3,3 +3,8 @@
 ################################################################################
 
 /clientapp/.vs
+/server/.vs
+/server/Donate.Api/obj
+/server/Donate.Api/bin/Debug/netcoreapp2.0
+/server/Donate.Logic/bin/Debug/netcoreapp2.0
+/server/Donate.Logic/obj
