@@ -20,5 +20,12 @@ namespace Donate.Logic
 
         [Parameter("bool", "isActive", 5)]
         public bool IsActive { get; set; }
+
+        [Parameter("uint", "created", 5)]
+        public long StartDate { get; set; }
+
+        [Parameter("uint", "donatedEnd", 6)]
+        public long EndDate { get; set; }
+
     }
 }

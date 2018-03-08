@@ -80,6 +80,7 @@ contract DonateContract {
        cInfo.isActive = true;
        cInfo.totalFundsNeeded = fundsNeeded * 1 ether;
        cInfo.collectedFunds = 0;
+       cInfo.fundsCollectedAt = 0;
    
        campaigns[_addr] = cInfo;
        
@@ -132,16 +133,19 @@ contract DonateContract {
         return (totalFunds = totalFundsDonated, allCampaings = totalCampaings);
     }
     
-    function campaignDetails(uint index) view public returns(address campaingOwner, uint totalNeeded, uint collectedUntilNow, uint giversCount, bool isActive){
+    function campaignDetails(uint index) view public 
+            returns(address campaignOwner, uint totalNeeded, uint collectedUntilNow, uint giversCount, bool isActive, uint created, uint donatedEnd){
         
         address _addr = campaignIndexes[index];
         
         return (
-                campaingOwner = _addr,
+                campaignOwner = _addr,
                 totalNeeded = campaigns[_addr].totalFundsNeeded,
                 collectedUntilNow = campaigns[_addr].collectedFunds,
                 giversCount = donationDetails[_addr].length,
-                isActive = campaigns[_addr].isActive
+                isActive = campaigns[_addr].isActive,
+                created = campaigns[_addr].creationDate,
+                donatedEnd = campaigns[_addr].fundsCollectedAt
             );
     }
     

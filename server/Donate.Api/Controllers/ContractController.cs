@@ -1,6 +1,8 @@
 ﻿using Donate.Logic;
 using Donate.Logic.ApiModel;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using ApiModels = Donate.Logic.ApiModel;
 
 namespace Donate.Api.Controllers
 {
@@ -19,6 +21,13 @@ namespace Donate.Api.Controllers
         {
             DonationstInfo info = DonateContract.DonationsInfo();
             return info;
+        }
+
+        [HttpGet("givers/{address}/{count}")]
+        public List<ApiModels.GiverInfo> Info(string address, int count)
+        {
+            List< ApiModels.GiverInfo> givers = DonateContract.GiversForCampaing(address, count);
+            return givers;
         }
     }
 }

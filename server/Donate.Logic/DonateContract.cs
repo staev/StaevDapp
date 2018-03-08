@@ -4,6 +4,8 @@ using Nethereum.Signer;
 using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
 
@@ -12,6 +14,7 @@ namespace Donate.Logic
     public interface IDonateContract
     {
         ApiModel.DonationstInfo DonationsInfo();
+        List<ApiModel.GiverInfo> GiversForCampaing(string address, int count);
     }
 
     public class DonateContract : IDonateContract
@@ -73,12 +76,22 @@ namespace Donate.Logic
             }
         }
 
+        private HexBigInteger EtherToWeii(int amount)
+        {
+            BigInteger weii = Web3.Convert.ToWei(amount);
+            return new HexBigInteger(weii);
+        }
+
         private void InitCampaigns()
         {
             var startCampaignFunc = Contract.GetFunction("startCampaign");
+            var donateForCampaign = Contract.GetFunction("donateForCampaign");
 
             if (!string.IsNullOrEmpty(Config.Campaing1Owner))
                 startCampaignFunc.SendTransactionAsync(Owner, defaultGas, zero, Config.Campaing1Owner, 5).GetAwaiter().GetResult();
+
+            donateForCampaign.SendTransactionAsync(Owner, defaultGas, EtherToWeii(1), Config.Campaing1Owner).GetAwaiter().GetResult();
+            donateForCampaign.SendTransactionAsync(Owner, defaultGas, EtherToWeii(2), Config.Campaing1Owner).GetAwaiter().GetResult();
 
             if (!string.IsNullOrEmpty(Config.Campaing2Owner))
                 startCampaignFunc.SendTransactionAsync(Owner, defaultGas, zero, Config.Campaing2Owner, 3).GetAwaiter().GetResult();
@@ -94,6 +107,12 @@ namespace Donate.Logic
         {
             decimal ethers = Nethereum.Util.UnitConversion.Convert.FromWei(value);
             return ethers;
+        }
+
+        private string ToDate(long value)
+        {
+            string date = new DateTime(1970, 1, 1).AddSeconds(value).ToLocalTime().ToString("M/d/yyyy hh:mm");
+            return date;
         }
 
         public ApiModel.DonationstInfo DonationsInfo()
@@ -116,11 +135,33 @@ namespace Donate.Logic
                 campaignInfo.FundsNeeded = WeiiToEther(cInfo.TotalNeeded);
                 campaignInfo.GiversCount = cInfo.GiversCount;
                 campaignInfo.IsActive = cInfo.IsActive;
+                campaignInfo.StartDate = ToDate(cInfo.StartDate);
+                if (cInfo.EndDate > 0)
+                    campaignInfo.EndDate = ToDate(cInfo.EndDate);
 
                 info.Campaigns.Add(campaignInfo);
             }
 
             return info;
         }
+
+        public List<ApiModel.GiverInfo> GiversForCampaing(string address, int count)
+        {
+            List<ApiModel.GiverInfo> givers = new List<ApiModel.GiverInfo>();
+            for (int i = 0; i < count; i++)
+            {
+                GiverInfo gInfo = contract.GetFunction("giverDetails").CallDeserializingToObjectAsync<GiverInfo>(ContractAddress, defaultGas, zero, address, i).GetAwaiter().GetResult();
+
+                ApiModel.GiverInfo giverInfo = new ApiModel.GiverInfo();
+                giverInfo.Address = gInfo.Address;
+                giverInfo.Amount = WeiiToEther(gInfo.Amount);
+                giverInfo.Date = ToDate(gInfo.Date);
+
+                givers.Add(giverInfo);
+            }
+
+            return givers;
+        }
+
     }
 }
