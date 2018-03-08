@@ -8,8 +8,6 @@ contract('DonateContract', function (accounts) {
 	const _donator2 = accounts[3]; 
 	
 	const oneEther = 10 ** 18;
-
-	console.log(_owner);
 	
 	 beforeEach(async function (){
 	  instance = await Donate.new({ from: _owner});
