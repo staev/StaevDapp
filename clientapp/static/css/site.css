@@ -40,3 +40,8 @@ div.app-container {
     color: red;
     font-weight: bold;
 }
+
+.wallet{
+    background-image: url('../img/wallet.png');
+    width:64px;
+}

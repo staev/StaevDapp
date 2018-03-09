@@ -24,5 +24,11 @@ namespace Donate.Logic.ApiModel
 
         [JsonProperty("endDate")]
         public string EndDate { get; set; }
+
+        [JsonProperty("fundsProgress")]
+        public decimal FundsProgress { get; set; }
+
+        [JsonProperty("collectPeriod")]
+        public double CollectPeriod { get; set; }
     }
 }

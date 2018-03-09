@@ -27,7 +27,7 @@ contract('DonateContract', function (accounts) {
 		  await instance.donateForCampaign(_campaignAcc,{from: _donator1, value : (2 * oneEther) });
 		  await instance.donateForCampaign(_campaignAcc,{from: _donator2, value : (2 * oneEther) });
 
-		 [totalNeeded, collectedUntilNow, giversCount]  = await  instance.campaignDetails(0);
+		 let [campaignOwner, totalNeeded, collectedUntilNow, giversCount, isActive, startDate, endDate]  = await  instance.campaignDetails(0);
 		  
 		 assert.strictEqual(collectedUntilNow.toNumber(), 4 * oneEther, " should be 4 ethers collected");
 		 assert.strictEqual(giversCount.toNumber(), 2, " should be 2 donators");
@@ -39,7 +39,7 @@ contract('DonateContract', function (accounts) {
 		  await instance.startCampaign(_campaignAcc, 10);
 
 		  let allCampaingsCount = await instance.getAllCampaigns();
-		  let [totalNeeded, collectedUntilNow, giversCount]  = await  instance.campaignDetails(0);
+		  let [campaignOwner, totalNeeded, collectedUntilNow, giversCount, isActive, startDate, endDate]   = await  instance.campaignDetails(0);
 		  
 		  assert.strictEqual(collectedUntilNow.toNumber(), 0 , " No donations at start" );
 	 });
@@ -47,7 +47,7 @@ contract('DonateContract', function (accounts) {
 	 it("should be no donators after campaign is started", async function () { 
 		  
 		  await instance.startCampaign(_campaignAcc, 10);
-		  let [totalNeeded, collectedUntilNow, giversCount, isActive]  = await  instance.campaignDetails(0);
+		  let [campaignOwner, totalNeeded, collectedUntilNow, giversCount, isActive, startDate, endDate]  = await  instance.campaignDetails(0);
 		  
 		  assert.strictEqual(giversCount.toNumber(), 0 , " No givers at start" );
 	 });
@@ -55,7 +55,7 @@ contract('DonateContract', function (accounts) {
 	 it("campaign should be marked as active when created", async function () { 
 		  
 		  await instance.startCampaign(_campaignAcc, 10);
-		  let [totalNeeded, collectedUntilNow, giversCount, isActive]  = await  instance.campaignDetails(0);
+		  let [campaignOwner, totalNeeded, collectedUntilNow, giversCount, isActive, startDate, endDate]   = await  instance.campaignDetails(0);
 		  
 		  assert.strictEqual(isActive, true , " Should be active" );
 	 });
@@ -81,7 +81,7 @@ contract('DonateContract', function (accounts) {
 		await instance.startCampaign(_campaignAcc, 2);
 	  
 		await instance.donateForCampaign(_campaignAcc,{from: _donator1, value : (3 * oneEther) });
-		let [totalNeeded, collectedUntilNow, giversCount, isActive]  = await  instance.campaignDetails(0);
+		let [campaignOwner, totalNeeded, collectedUntilNow, giversCount, isActive, startDate, endDate]   = await  instance.campaignDetails(0);
 		  
 		assert.strictEqual(isActive, false , " No givers at start" );
 	 });

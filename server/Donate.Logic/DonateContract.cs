@@ -8,13 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
+using System.Linq;
 
 namespace Donate.Logic
 {
     public interface IDonateContract
     {
         ApiModel.DonationstInfo DonationsInfo();
-        List<ApiModel.GiverInfo> GiversForCampaing(string address, int count);
+        List<ApiModel.GiverInfo> GiversForCampaing(string address);
         ApiModel.ContractMetadata GetMetadata();
     }
 
@@ -95,7 +96,11 @@ namespace Donate.Logic
             donateForCampaign.SendTransactionAsync(Owner, defaultGas, EtherToWeii(2), Config.Campaing1Owner).GetAwaiter().GetResult();
 
             if (!string.IsNullOrEmpty(Config.Campaing2Owner))
+            {
                 startCampaignFunc.SendTransactionAsync(Owner, defaultGas, zero, Config.Campaing2Owner, 3).GetAwaiter().GetResult();
+
+                donateForCampaign.SendTransactionAsync(Owner, defaultGas, EtherToWeii(3), Config.Campaing1Owner).GetAwaiter().GetResult();
+            }
         }
 
         private ContractMetaInfo GetContractInfo()
@@ -110,9 +115,15 @@ namespace Donate.Logic
             return ethers;
         }
 
-        private string ToDate(long value)
+        private string FormateDate(DateTime date)
         {
-            string date = new DateTime(1970, 1, 1).AddSeconds(value).ToLocalTime().ToString("M/d/yyyy hh:mm");
+            string formatted = date.ToString("MM.dd.yyyy hh:mm");
+            return formatted;
+        }
+
+        private DateTime ToDate(long value)
+        {
+            DateTime date = new DateTime(1970, 1, 1).AddSeconds(value).ToLocalTime();
             return date;
         }
 
@@ -136,19 +147,29 @@ namespace Donate.Logic
                 campaignInfo.FundsNeeded = WeiiToEther(cInfo.TotalNeeded);
                 campaignInfo.GiversCount = cInfo.GiversCount;
                 campaignInfo.IsActive = cInfo.IsActive;
-                campaignInfo.StartDate = ToDate(cInfo.StartDate);
+                DateTime startDate = ToDate(cInfo.StartDate);
+                campaignInfo.StartDate = FormateDate(startDate);
+                campaignInfo.FundsProgress = Math.Round((campaignInfo.Collected / campaignInfo.FundsNeeded) * 100, 2);
                 if (cInfo.EndDate > 0)
-                    campaignInfo.EndDate = ToDate(cInfo.EndDate);
-
+                {
+                    DateTime endDate = ToDate(cInfo.EndDate);
+                    campaignInfo.EndDate = FormateDate(endDate);
+                    campaignInfo.CollectPeriod = Math.Round((endDate - startDate).TotalDays,1);
+                }
                 info.Campaigns.Add(campaignInfo);
             }
+
+            info.Campaigns = info.Campaigns.OrderByDescending(c => c.StartDate).ToList();
 
             return info;
         }
 
-        public List<ApiModel.GiverInfo> GiversForCampaing(string address, int count)
+        public List<ApiModel.GiverInfo> GiversForCampaing(string address)
         {
             List<ApiModel.GiverInfo> givers = new List<ApiModel.GiverInfo>();
+            long count = contract.GetFunction("campaignDonationsCount").CallAsync<long>(ContractAddress, defaultGas, zero, address).
+                GetAwaiter().GetResult();
+
             for (int i = 0; i < count; i++)
             {
                 GiverInfo gInfo = contract.GetFunction("giverDetails").CallDeserializingToObjectAsync<GiverInfo>(ContractAddress, defaultGas, zero, address, i).GetAwaiter().GetResult();
@@ -156,10 +177,12 @@ namespace Donate.Logic
                 ApiModel.GiverInfo giverInfo = new ApiModel.GiverInfo();
                 giverInfo.Address = gInfo.Address;
                 giverInfo.Amount = WeiiToEther(gInfo.Amount);
-                giverInfo.Date = ToDate(gInfo.Date);
+                giverInfo.Date = FormateDate(ToDate(gInfo.Date));
 
                 givers.Add(giverInfo);
             }
+
+            givers = givers.OrderByDescending(g => g.Date).ToList();
 
             return givers;
         }

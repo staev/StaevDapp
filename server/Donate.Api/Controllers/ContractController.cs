@@ -23,10 +23,10 @@ namespace Donate.Api.Controllers
             return info;
         }
 
-        [HttpGet("givers/{address}/{count}")]
-        public List<ApiModels.GiverInfo> Info(string address, int count)
+        [HttpGet("givers/{address}")]
+        public List<ApiModels.GiverInfo> Info(string address)
         {
-            List< ApiModels.GiverInfo> givers = DonateContract.GiversForCampaing(address, count);
+            List< ApiModels.GiverInfo> givers = DonateContract.GiversForCampaing(address);
             return givers;
         }
 

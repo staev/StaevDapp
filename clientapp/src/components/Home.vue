@@ -1,101 +1,72 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    Please donate: <input v-model="amount" />
-    <div>
-      <div  v-for="c in campaigns" v-bind:key="c.owner">
-        <p>
-          {{ c.owner }}
-        </p>
-         <p>
-         Sum needed: {{ c.fundsNeeded }}
-        </p>
-         <p>
-         Collected: {{ c.collected }}
-        </p>
-          <p>
-         Donations: {{ c.giversCount }}
-        </p>
-        <p>
-         Started: {{ c.startDate }}
-        </p>
-        <p v-if="!c.isActive">
-         Collected at: {{ c.endDate }}
-        </p>
-        <button v-on:click="donate(c.owner)">Donate</button>
-        <a href=""Details></a>
-      </div>
+  <div class="container">
+ <div class="card mb-4 box-shadow margin-fix">
+    <div class="card-header">
+      <h4 class="my-0 font-weight-normal col-xs-2">Wellcome to HaveFun Funds</h4>
     </div>
+      <div class="card-body">We have reached {{totalDonations}} campaings, collecting {{totalCollected}} ethers helping people over the world. Be happy and enjoy donating.</div> 
+ </div>
+    
+   <div class="card-deck mb-3 text-center">
+     <div v-for="c in campaigns" v-bind:key="c.owner">
+        <div class="card mb-4 box-shadow">
+          <div class="card-header">
+            <h4 class="my-0 font-weight-normal col-xs-2">{{ c.owner }}</h4>
+          </div>
+            <img v-if="!c.isActive" style="position:absolute; left:20px; top:85px;" src="static/img/done.png" width="64px" />
+            <img v-else style="position:absolute; left:20px; top:80px;" src="static/img/inprogress.png" width="130px" />
+          
+          <div class="card-body">
+            <h1 class="list-unstyled mt-3 mb-4">{{ c.collected }} <small class="text-muted">from </small>{{ c.fundsNeeded }}</h1>
+            <ul class="list-unstyled mt-3 mb-4">
+              <li>From {{ c.startDate}}</li>
+              <li>Total donations: {{ c.giversCount }}</li>
+            </ul>
+            <ul v-if="c.isActive" class="list-unstyled mt-3 mb-4">
+              <li>Status: <span style="color:orange">Active</span></li>
+              <li v-if="c.fundsProgress > 50">Progress: <span class="green"> {{ c.fundsProgress }} % </span></li>
+              <li v-else >Progress: <span class="red"> {{ c.fundsProgress }} % </span></li>              
+            </ul>
+            <ul v-else class="list-unstyled mt-3 mb-4">
+              <li>Status: <span  style="color:green">Completed</span></li>
+              <li>Comleted at:  {{ c.endDate }}</li>              
+            </ul>
+            <router-link v-if="c.isActive" class="btn btn-lg btn-block btn-outline-primary" :to="{ name: 'Details', params: { address: c.owner }}">Details</router-link>
+            <router-link v-else style="color: green !important; border-color: green !important" class="btn btn-lg btn-block btn-outline-primary" :to="{ name: 'Details', params: { address: c.owner }}">Thank you! View history</router-link>
+          </div>
+        </div>
+      </div>
+     </div>
   </div>
 </template>
 
 <script>
-
       import Web3 from 'web3'
-      import ContractResources from '../services/ContractResource';
-      let	contractInstance;
-      let baseUrl = "http://localhost:60099/api/contract"
-      let contractResources = new ContractResources()
-
-      // var event = contractInstance.newValue()
-
-      // watch for changes
-     // event.watch(function(error, result){
-     //   if (!error)
-     //       {
-     //         console.log(result.args.oldValue.toNumber() + "," + result.args.newValue.toNumber());
-     //       }
-     //  });
+      import ContractService from '../services/ContractResource';
+      let contractService;
 
 export default {
-  name: 'HelloWorld',
+  name: 'Home',
+  
   data () {
     return {  
       msg: 'Welcome to HaveFun Funds Dapp',
-      address: "0x5aeda56215b167893e80b4fe645ba6d5bab767de",
+      address: "",
       campaigns :[],
-      amount : 1
+      amount : 1,
+      totalCollected: 0,
+      totalDonations: 0
     }
   },
     methods: {
     init () { 
-     this.$http.get(baseUrl + '/metadata')
-        .then(response => {
-          let contractMetadata = response.body;
-          let contract = web3.eth.contract(JSON.parse(contractMetadata.abi));
-          contractInstance = contract.at(contractMetadata.address);
-           this.$http.get(baseUrl + '/info')
-            .then(response => {
-                this.campaigns = response.body.campaigns;
-                console.log(response.body);
-            });
-        });
-    },
-    allAccounts(){
-        web3.eth.getAccounts((error, accounts) => console.log(accounts))
-    },
-    readFromContract(){
-      contractInstance.hasOwnerRights(function(err, res) {
-        if(!err){
-          console.log(res);
-        } else {
-          console.log("Something went horribly wrong");
-        }
-      });
-    },
-    donate(contractOwner){
-      let weiiAmount = web3.toWei(this.amount)
-      contractInstance.donateForCampaign(contractOwner, {from: web3.eth.accounts[0], gas: 3000000, value: weiiAmount}, function(err, res){
-        if(!err){
-          console.log("Success! Transaction hash: " + res.valueOf());
-        } else {
-          console.log("Something went wrong. Are you sure that you are the current owner?");
-        }
-      });
-    },
-    getBalance(){
-        web3.eth.getBalance(this.address, 
-            (error, balance) => console.log(balance.toNumber()))
+      this.contractService = new ContractService(this.$http)
+      let self = this;
+      this.contractService.getCampaignsInfo(function(info){
+        self.campaigns = info.campaigns;
+        self.totalCollected = info.totalFunds;
+        self.totalDonations = info.allCampaings;
+      })
     }
   },
   created () {
@@ -104,7 +75,6 @@ export default {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 h1, h2 {
   font-weight: normal; 
@@ -117,7 +87,23 @@ li {
   display: inline-block;
   margin: 0 10px;
 }
-a {
-  color: #42b983;
+
+@media (min-width: 1200px)
+{
+  .container {
+      max-width: 1270px !important;
+  }
+  .margin-fix{
+    margin-right: 35px;
+  }
 }
+
+.green{
+  color: green;
+}
+
+.red{
+  color: rgb(70, 41, 41);
+}
+
 </style>

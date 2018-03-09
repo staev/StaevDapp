@@ -149,6 +149,10 @@ contract DonateContract {
             );
     }
     
+     function campaignDonationsCount(address campaignAddr) public view returns (uint) {
+        return donationDetails[campaignAddr].length;
+    }
+    
     function giverDetails(address campaignAddr, uint index) public view 
         returns (address giver, uint amount, uint date) {
         
