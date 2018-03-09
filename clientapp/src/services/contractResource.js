@@ -5,7 +5,7 @@ export default class ContractService {
   httpProvider;
   constructor(httpProvider) {
     this.httpProvider = httpProvider;
-    this.httpProvider.get(this.baseUrl + '/metadata')
+     this.httpProvider.get(this.baseUrl + '/metadata')
         .then(response => {
           let contractMetadata = response.body;
           let contract = web3.eth.contract(JSON.parse(contractMetadata.abi));
@@ -14,8 +14,16 @@ export default class ContractService {
        });
   }
 
-  isOwner() {
+  isOwner(callback) {
     this.contractInstance.hasOwnerRights(function(err, succ){
+      callback(err, succ)
+    })
+  }
+
+  donate(callback) {
+    console.log("Donate from: " + web3.eth.accounts[0]);
+    this.contractInstance.donate({from: web3.eth.accounts[0], gas: 3000000, value: 5000000000000000000}, function(err, succ){
+      debugger
       callback(err, succ)
     })
   }
@@ -23,11 +31,14 @@ export default class ContractService {
   getCampaignsInfo(callback){
     this.httpProvider.get(this.baseUrl + '/info')
       .then(response => {
-        for (let index = 0; index < response.body.campaigns.length; index++) {
-          
-        }
         callback(response.body)
     });
+  }
+
+  getBalance(callback){
+    this.contractInstance.getBalance({from: '0x627306090abab3a6e1400e9345bc60c78a8bef57'},function(err, succ) {
+      callback(err, succ)
+    })
   }
 
   donateForCampaign (address, amount, callback){

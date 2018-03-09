@@ -41,7 +41,6 @@
 </template>
 
 <script>
-      import Web3 from 'web3'
       import ContractService from '../services/ContractResource';
       let contractService;
 

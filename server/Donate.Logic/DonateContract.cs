@@ -99,7 +99,7 @@ namespace Donate.Logic
             {
                 startCampaignFunc.SendTransactionAsync(Owner, defaultGas, zero, Config.Campaing2Owner, 3).GetAwaiter().GetResult();
 
-                donateForCampaign.SendTransactionAsync(Owner, defaultGas, EtherToWeii(3), Config.Campaing1Owner).GetAwaiter().GetResult();
+                donateForCampaign.SendTransactionAsync(Owner, defaultGas, EtherToWeii(3), Config.Campaing2Owner).GetAwaiter().GetResult();
             }
         }
 
