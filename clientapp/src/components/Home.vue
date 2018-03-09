@@ -1,11 +1,31 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <button v-on:click="allAccounts">allAccounts</button>
-    <button v-on:click="readFromContract">read</button>
-    <button v-on:click="writeToContract">write</button>
-    <input v-model="address"  type="text"/>
-    <button v-on:click="getBalance">getBalance</button>
+    Please donate: <input v-model="amount" />
+    <div>
+      <div  v-for="c in campaigns" v-bind:key="c.owner">
+        <p>
+          {{ c.owner }}
+        </p>
+         <p>
+         Sum needed: {{ c.fundsNeeded }}
+        </p>
+         <p>
+         Collected: {{ c.collected }}
+        </p>
+          <p>
+         Donations: {{ c.giversCount }}
+        </p>
+        <p>
+         Started: {{ c.startDate }}
+        </p>
+        <p v-if="!c.isActive">
+         Collected at: {{ c.endDate }}
+        </p>
+        <button v-on:click="donate(c.owner)">Donate</button>
+        <a href=""Details></a>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -16,8 +36,8 @@
       let	contractInstance;
       let baseUrl = "http://localhost:60099/api/contract"
       let contractResources = new ContractResources()
-      //let provider = new Web3(new Web3.providers.HttpProvider("http://localhost:9545"));
-     // var event = contractInstance.newValue()
+
+      // var event = contractInstance.newValue()
 
       // watch for changes
      // event.watch(function(error, result){
@@ -32,7 +52,9 @@ export default {
   data () {
     return {  
       msg: 'Welcome to HaveFun Funds Dapp',
-      address: "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
+      address: "0x5aeda56215b167893e80b4fe645ba6d5bab767de",
+      campaigns :[],
+      amount : 1
     }
   },
     methods: {
@@ -42,13 +64,18 @@ export default {
           let contractMetadata = response.body;
           let contract = web3.eth.contract(JSON.parse(contractMetadata.abi));
           contractInstance = contract.at(contractMetadata.address);
+           this.$http.get(baseUrl + '/info')
+            .then(response => {
+                this.campaigns = response.body.campaigns;
+                console.log(response.body);
+            });
         });
     },
     allAccounts(){
-        provider.eth.getAccounts((error, accounts) => console.log(accounts))
+        web3.eth.getAccounts((error, accounts) => console.log(accounts))
     },
     readFromContract(){
-      contractInstance.hasOwnerRights.call(function(err, res) {
+      contractInstance.hasOwnerRights(function(err, res) {
         if(!err){
           console.log(res);
         } else {
@@ -56,8 +83,9 @@ export default {
         }
       });
     },
-    writeToContract(){
-      contractInstance.donateForCampaign('0x6330a553fc93768f612722bb8c2ec78ac90b3bbc',{from: web3.eth.accounts[0], gas: 3000000, value: 10000000000000000000}, function(err, res){
+    donate(contractOwner){
+      let weiiAmount = web3.toWei(this.amount)
+      contractInstance.donateForCampaign(contractOwner, {from: web3.eth.accounts[0], gas: 3000000, value: weiiAmount}, function(err, res){
         if(!err){
           console.log("Success! Transaction hash: " + res.valueOf());
         } else {
@@ -66,7 +94,7 @@ export default {
       });
     },
     getBalance(){
-        provider.eth.getBalance(this.address, 
+        web3.eth.getBalance(this.address, 
             (error, balance) => console.log(balance.toNumber()))
     }
   },

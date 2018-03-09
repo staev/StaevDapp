@@ -5,6 +5,10 @@ import VueResource from 'vue-resource'
 import App from './App'
 import router from './router'
 
+import 'bootstrap'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import '../static/css/site.css'
+
 Vue.config.productionTip = false
 Vue.use(VueResource)
 /* eslint-disable no-new */
@@ -14,3 +18,4 @@ new Vue({
   components: { App },
   template: '<App/>'
 })
+ 
