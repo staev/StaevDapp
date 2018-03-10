@@ -11,7 +11,7 @@
     </div>
      <div class="card mb-4 box-shadow margin-fix">
     <div class="card-header">
-      <h4 class="my-0 font-weight-normal col-xs-2">Donations histoy</h4>
+      <h4 class="my-0 font-weight-normal col-xs-2">Donations history</h4>
     </div>
     <div class="card-body">
         <table class="table">
@@ -24,7 +24,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr v-for="g in givers" v-bind:key="g.address" v-bind:class="[g.isMax ? maxDonation : '']">
+    <tr v-for="g in givers"  v-bind:class="[g.isMax ? maxDonation : '']">
       <td>{{g.address}}</td>
       <td>{{g.date}}</td>
       <td>{{g.amount}}</td>

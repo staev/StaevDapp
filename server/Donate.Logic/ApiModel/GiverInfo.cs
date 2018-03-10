@@ -16,5 +16,5 @@ namespace Donate.Logic.ApiModel
 
         [JsonProperty("isMax")]
         public bool isMaxDonation { get; set; }
-    }
+    }   
 }

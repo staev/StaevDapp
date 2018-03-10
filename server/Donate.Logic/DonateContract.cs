@@ -198,9 +198,9 @@ namespace Donate.Logic
             ApiModel.ContractMetadata metaData = new ApiModel.ContractMetadata();
             metaData.Address = ContractAddress;
             metaData.Abi = JsonConvert.SerializeObject(GetContractInfo().Abi);
+            metaData.Owner = Account.Address;
 
             return metaData;
         }
-
     }
 }

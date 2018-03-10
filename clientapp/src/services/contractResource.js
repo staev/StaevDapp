@@ -3,6 +3,7 @@ export default class ContractService {
   baseUrl = "http://localhost:60099/api/contract"
   contractInstance;
   httpProvider;
+  contractOwner;
   constructor(httpProvider) {
     this.httpProvider = httpProvider;
      this.httpProvider.get(this.baseUrl + '/metadata')
@@ -10,7 +11,8 @@ export default class ContractService {
           let contractMetadata = response.body;
           let contract = web3.eth.contract(JSON.parse(contractMetadata.abi));
           this.contractInstance = contract.at(contractMetadata.address);
-          console.log(this.contractInstance)
+          this.contractOwner = contractMetadata.owner;
+          console.log(this.contractOwner)
        });
   }
 
@@ -22,7 +24,7 @@ export default class ContractService {
 
   donate(callback) {
     console.log("Donate from: " + web3.eth.accounts[0]);
-    this.contractInstance.donate({from: web3.eth.accounts[0], gas: 3000000, value: 5000000000000000000}, function(err, succ){
+    this.contractInstance.donate({from: web3.eth.accounts[0], gas: 3000000, value: 50000000000000000}, function(err, succ){
       debugger
       callback(err, succ)
     })
@@ -36,9 +38,9 @@ export default class ContractService {
   }
 
   getBalance(callback){
-    this.contractInstance.getBalance({from: '0x627306090abab3a6e1400e9345bc60c78a8bef57'},function(err, succ) {
+    this.contractInstance.getBalance({from:  this.contractOwner},function(err, succ) {
       callback(err, succ)
-    })
+  })
   }
 
   donateForCampaign (address, amount, callback){
