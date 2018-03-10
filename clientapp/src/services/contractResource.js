@@ -55,6 +55,12 @@ export default class ContractService {
     this.httpProvider.get(this.baseUrl + '/givers/' + address)
     .then(response => {
       callback(response.body);
-  });
+    });
+  }
+
+  createCampaign(address, amountInEther, callback){
+    this.contractInstance.startCampaign(address,amountInEther, {from: web3.eth.accounts[0], gas: 3000000}, function(err, succ){
+      callback(err, succ)
+  })
   }
 }

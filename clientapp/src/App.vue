@@ -6,7 +6,7 @@
       <span class="p-2 text-dark" href="#">Address:</span>
       <span class="p-2 text-dark" href="#">{{currentAccount}}</span>
        
-      <a v-if="isCurrentOwner" class="btn btn-outline-primary" v-on:click="donateForOwner" href="#">New Campaign</a>
+       <router-link v-if="isCurrentOwner" class="btn btn-outline-primary" :to="{ name: 'Create'}">New Campaign</router-link>
       <a v-else class="btn btn-outline-primary" v-on:click="donateForOwner" href="#">{{donateText}}</a>
     </div>
     <router-view/>

@@ -52,6 +52,7 @@ export default {
   },
     methods: {
     loadGivers () {
+      // this.$router.push({ path: '/home'});
        let self = this;
        this.contractService.loadGivers(this.$route.params.address, function(data){
           self.givers = data;
@@ -65,6 +66,7 @@ export default {
         } else {
           console.log("Something went wrong. Are you sure that you are the current owner?");
         }
+        this.loadGivers();
       });
     }
   },
