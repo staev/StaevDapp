@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-        <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+      <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+      <img src="/static/img/image7.png" width="31px"/>
       <h5 class="my-0 mr-md-auto font-weight-normal">HaveFun Funds</h5>
       <span class="p-2 text-dark" href="#">Address:</span>
       <span class="p-2 text-dark" href="#">{{currentAccount}}</span>
@@ -50,10 +51,10 @@ export default {
        console.log(err);
        if(!err){
           self.donateText = "Thank you!"
-          setTimeout(function(){
-               self.donateText = "Donate 0.05 ethers"
-          },6000)
        }
+        setTimeout(function(){
+               self.donateText = "Donate 0.05 ethers"
+          },5000)
      })
     }
   },

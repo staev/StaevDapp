@@ -13,5 +13,8 @@ namespace Donate.Logic.ApiModel
 
         [JsonProperty("date")]
         public string Date { get; set; }
+
+        [JsonProperty("isMax")]
+        public bool isMaxDonation { get; set; }
     }
 }

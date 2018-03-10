@@ -78,7 +78,7 @@ namespace Donate.Logic
             }
         }
 
-        private HexBigInteger EtherToWeii(int amount)
+        private HexBigInteger EtherToWeii(double amount)
         {
             BigInteger weii = Web3.Convert.ToWei(amount);
             return new HexBigInteger(weii);
@@ -92,8 +92,9 @@ namespace Donate.Logic
             if (!string.IsNullOrEmpty(Config.Campaing1Owner))
                 startCampaignFunc.SendTransactionAsync(Owner, defaultGas, zero, Config.Campaing1Owner, 5).GetAwaiter().GetResult();
 
+            donateForCampaign.SendTransactionAsync(Owner, defaultGas, EtherToWeii(0.3), Config.Campaing1Owner).GetAwaiter().GetResult();
             donateForCampaign.SendTransactionAsync(Owner, defaultGas, EtherToWeii(1), Config.Campaing1Owner).GetAwaiter().GetResult();
-            donateForCampaign.SendTransactionAsync(Owner, defaultGas, EtherToWeii(2), Config.Campaing1Owner).GetAwaiter().GetResult();
+            donateForCampaign.SendTransactionAsync(Owner, defaultGas, EtherToWeii(0.4), Config.Campaing1Owner).GetAwaiter().GetResult();
 
             if (!string.IsNullOrEmpty(Config.Campaing2Owner))
             {
@@ -181,6 +182,11 @@ namespace Donate.Logic
 
                 givers.Add(giverInfo);
             }
+
+            decimal max = givers.Max(g => g.Amount);
+            var bestGiver = givers.FirstOrDefault(g => g.Amount == max);
+            if (bestGiver != null)
+                bestGiver.isMaxDonation = true;
 
             givers = givers.OrderByDescending(g => g.Date).ToList();
 

@@ -48,4 +48,11 @@ export default class ContractService {
         callback(err, succ)
     })
   }
+
+  loadGivers(address, callback){
+    this.httpProvider.get(this.baseUrl + '/givers/' + address)
+    .then(response => {
+      callback(response.body);
+  });
+  }
 }

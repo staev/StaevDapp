@@ -31,8 +31,8 @@
               <li>Status: <span  style="color:green">Completed</span></li>
               <li>Comleted at:  {{ c.endDate }}</li>              
             </ul>
-            <router-link v-if="c.isActive" class="btn btn-lg btn-block btn-outline-primary" :to="{ name: 'Details', params: { address: c.owner }}">Details</router-link>
-            <router-link v-else style="color: green !important; border-color: green !important" class="btn btn-lg btn-block btn-outline-primary" :to="{ name: 'Details', params: { address: c.owner }}">Thank you! View history</router-link>
+            <router-link v-if="c.isActive" class="btn btn-lg btn-block btn-outline-primary" :to="{ name: 'Details', params: { address: c.owner, isActive: c.isActive }}">Details</router-link>
+            <router-link v-else style="color: green !important; border-color: green !important" class="btn btn-lg btn-block btn-outline-primary" :to="{ name: 'Details', params: { address: c.owner, isActive: c.isActive }}">Thank you! View history</router-link>
           </div>
         </div>
       </div>
