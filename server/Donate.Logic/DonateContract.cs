@@ -155,7 +155,7 @@ namespace Donate.Logic
                 {
                     DateTime endDate = ToDate(cInfo.EndDate);
                     campaignInfo.EndDate = FormateDate(endDate);
-                    campaignInfo.CollectPeriod = Math.Round((endDate - startDate).TotalDays,1);
+                    campaignInfo.CollectPeriod = Math.Round((endDate - startDate).TotalDays, 1);
                 }
                 info.Campaigns.Add(campaignInfo);
             }
@@ -182,11 +182,13 @@ namespace Donate.Logic
 
                 givers.Add(giverInfo);
             }
-
-            decimal max = givers.Max(g => g.Amount);
-            var bestGiver = givers.FirstOrDefault(g => g.Amount == max);
-            if (bestGiver != null)
-                bestGiver.isMaxDonation = true;
+            if (givers.Any())
+            {
+                decimal max = givers.Max(g => g.Amount);
+                var bestGiver = givers.FirstOrDefault(g => g.Amount == max);
+                if (bestGiver != null)
+                    bestGiver.isMaxDonation = true;
+            }
 
             givers = givers.OrderByDescending(g => g.Date).ToList();
 

@@ -60,13 +60,14 @@ export default {
        })
     },
     donate(contractOwner){
+      var self= this;
       this.contractService.donateForCampaign(this.address, this.amount, function(err, res){
         if(!err){
           console.log("Success! Transaction hash: " + res.valueOf());
         } else {
           console.log("Something went wrong. Are you sure that you are the current owner?");
         }
-        this.loadGivers();
+        self.loadGivers();
       });
     }
   },
